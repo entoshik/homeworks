@@ -1,0 +1,25 @@
+rule anti_joins:
+    input:
+        "input/mass_spec_results.csv",
+        "input/sample_metadata.csv"
+    output:
+        "output/anti_left_join_result.csv",
+        "output/anti_right_join_result.csv",
+        "output/anti_outer_join_result.csv"
+    shell:
+        """
+        mkdir -p output
+        mkdir -p data
+
+        cp {input[0]} data/
+        cp {input[1]} data/
+
+        # запускаем контейнер под текущим пользователем
+        docker run --rm -u $(id -u):$(id -g) -v $(pwd):/home -w /home massspec:local \
+            bash -c "Rscript /home/make_csv.R"
+
+        cp data/anti_left_join_result.csv output/
+        cp data/anti_right_join_result.csv output/
+        cp data/anti_outer_join_result.csv output/
+        """
+
